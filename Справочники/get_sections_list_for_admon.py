@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fry Apr 01 17:44:56 2021
+Created on Mon Sep 05 18:00:22 2022
 
 @author: Irina Tretiakova
 
-Получаем список Кампаний за период с date_from
+Получаем справочник сайтов AdFox для Admon
 
 """
 
@@ -14,23 +14,21 @@ import requests
 from datetime import datetime
 from settings import ADFOX_API_KEY
 
+
 headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
 url = 'https://adfox.yandex.ru/api/v1'
 
-date_from = '2014-07-01'
-supercampaign_id = 186640
-
 limit = 1000
-
 offset = 0
+
 total_rows = limit + 1
 page = 0
 rows = 0
 
-file_name = r'F:\WORK\AdFox\API_Reports\14.11.2022\campaigns_{}.xlsx'.format(
-    datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+file_name = r'F:\WORK\AdFox\Справочники\Для Admon и Brain\sections_{}.tsv'\
+    .format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
-writer = pd.ExcelWriter(file_name)
+writer = open(file_name, "w")
 
 with writer:
     while rows + (page - 1) * limit < total_rows:
@@ -39,9 +37,7 @@ with writer:
         params = (
             ('object', 'account'),
             ('action', 'list'),
-            ('actionObject', 'campaign'),
-            ('dateAddedFrom', date_from),
-            ('superCampaignID', supercampaign_id),
+            ('actionObject', 'zone'),
             ('offset', offset),
             ('limit', limit),
             ('encoding', 'UTF-8')
@@ -56,25 +52,23 @@ with writer:
         rows = int(root.find('result').find('rows').text)
 
         data = root.find("result").find("data")
-        supercampaigns_info_rows = []
+        sites_info_rows = []
 
         for row in data:
-            supercampaign_data = {}
-            for child in list(row):
-                try:
-                    value = int(child.text)
-                except:
-                    value = child.text
-                supercampaign_data[child.tag] = value
-            supercampaigns_info_rows.append(supercampaign_data)
+            site_data = {}
+            site_data["ID"] = row.find("ID").text
+            site_data["name"] = row.find("name").text
+            sites_info_rows.append(site_data)
 
-        supercampaigns_info_list = pd.DataFrame(supercampaigns_info_rows)
+        sites_info_list = pd.DataFrame(sites_info_rows)
+
         if page == 1:
             print('total_pages = {}'.format(total_pages))
             print('total_rows = {}'.format(total_rows))
-            supercampaigns_info_list.to_excel(writer, sheet_name='data', index=False)
+            sites_info_list.to_csv(writer, sep="\t", index=False, encoding="utf8", line_terminator='\n')
         else:
-            supercampaigns_info_list.to_excel(writer, sheet_name='data', startrow=offset + 1, header=False, index=False)
+            sites_info_list.to_csv(writer, header=False, index=False, sep="\t",
+                                   encoding="utf8", line_terminator='\n')
 
         offset += limit
 

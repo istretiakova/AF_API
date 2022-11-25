@@ -16,32 +16,12 @@ from settings import ADFOX_API_KEY
 
 
 def get_templates_list(key, banner_type_id):
-    """
-    
-
-    Parameters
-    ----------
-    key : TYPE
-        DESCRIPTION.
-    banner_type_id : TYPE
-        DESCRIPTION.
-
-    Returns
-    -------
-    None.
-
-    """
 
     headers = {'X-Yandex-API-Key': key}
     url = 'https://adfox.yandex.ru/api/v1'
 
     limit = 1000
-
     offset = 0
-    total_rows = limit + 1
-    page = 0
-    rows = 0
-
     params = (
         ('object', 'bannerType'),
         ('action', 'list'),
@@ -54,7 +34,6 @@ def get_templates_list(key, banner_type_id):
 
     response = requests.get(url, params=params, headers=headers)
     root = ET.fromstring(response.text)
-    rows = int(root.find('result').find('rows').text)
     data = root.find("result").find("data")
     templates_info_rows = []
     for row in data:
@@ -71,31 +50,13 @@ def get_templates_list(key, banner_type_id):
     return templates_list
 
 
-def get_templates_info(key, templates_list):
-    """
-    
-    Parameters
-    ----------
-    key : TYPE
-        DESCRIPTION.
-    templates_list : TYPE
-        DESCRIPTION.
+def get_templates_info(key, templates_list, files_url):
 
-    Returns
-    -------
-    None.
-
-    """
     headers = {'X-Yandex-API-Key': key}
     url = 'https://adfox.yandex.ru/api/v1'
 
     limit = 1000
-
     offset = 0
-    total_rows = limit + 1
-    page = 0
-    rows = 0
-
     templates_info_rows = []
 
     for template_id in templates_list['templateID']:
@@ -112,7 +73,6 @@ def get_templates_info(key, templates_list):
 
             response = requests.get(url, params=params, headers=headers)
             root = ET.fromstring(response.text)
-            rows = int(root.find('result').find('rows').text)
             data = root.find("result").find("data").find("row0")
             template_data = {'templateID': int(data.find('id').text), 'templateName': data.find('name').text}
 
@@ -128,13 +88,14 @@ def get_templates_info(key, templates_list):
                 event_name = row.find('name').text
                 template_data[event_id] = event_name
 
-
             template_code = data.find('impressionCode').text
+            template_id = template_data['templateID']
+            template_name = template_data['templateName'].replace(':', '')
 
-            file_name = r'C:\Users\Natalia\Downloads\Templates\{}_{}.txt'.format(template_data['templateID'],
-                                                                               template_data['templateName'])
-            #with open(file_name, 'w', encoding='utf8') as ff:
-            #    ff.write(template_code)
+            template_file_name = f"{files_url}\Templates\{template_id}_{template_name}.txt"
+
+            with open(template_file_name, 'w', encoding='utf8') as ff:
+                ff.write(template_code)
 
             templates_info_rows.append(template_data)
         except:
@@ -144,21 +105,21 @@ def get_templates_info(key, templates_list):
     return templates_info_list
 
 
-file_name = r'C:\Users\Natalia\Downloads\templates_info_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
-writer = pd.ExcelWriter(file_name)
+# ==========Конфиг==========
 
+files_url = r'F:\WORK\AdFox\API_Reports\25.10.2022\\'
+out_file = f'{files_url}templates_info_{datetime.now().strftime("%Y-%m-%d-%H%M%S")}.xlsx'
+banner_type_id = 128959
 
-key = ADFOX_API_KEY
-banner_type_id = 86755
+# =======Конец конфига=======
 
-templates_list = get_templates_list(key, banner_type_id)
-templates_info_list = get_templates_info(key, templates_list)
+writer = pd.ExcelWriter(out_file)
+
+templates_list = get_templates_list(ADFOX_API_KEY, banner_type_id)
+templates_info_list = get_templates_info(ADFOX_API_KEY, templates_list, files_url)
 
 with writer:
     templates_list.to_excel(writer, sheet_name='templates_list')
     templates_info_list.to_excel(writer, sheet_name='templates_info')
 
-#templates_info_list.to_csv(r'C:\Users\Natalia\Downloads\templates_info_2', sep=';', encoding='cp1251')
-
-print('Отчет готов и находится здесь: {}'.format(file_name))
-
+print('Отчет готов и находится здесь: {}'.format(out_file))

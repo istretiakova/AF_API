@@ -19,8 +19,8 @@ url = 'https://adfox.yandex.ru/api/v1'
 
 # ==========Конфиг==========
 
-files_url = r'F:\WORK\AdFox\API_Reports\09.08.2022\\'
-in_file = f'{files_url}banner_campaigns.csv'
+files_url = r'F:\WORK\AdFox\API_Reports\14.11.2022\\'
+in_file = f'{files_url}campaigns.csv'
 out_file = f'{files_url}banners_info_{datetime.now().strftime("%Y-%m-%d-%H%M%S")}.xlsx'
 campaign_id_field = 'ID кампании'
 

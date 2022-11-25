@@ -15,13 +15,13 @@ from datetime import datetime
 from settings import ADFOX_API_KEY
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\05.08.2022'
+report_directory = r'F:\WORK\AdFox\API_Reports\15.11.2022'
 
 # указываем название файла со списком ID кампаний
-campaigns_list = pd.read_csv(report_directory + r'\campaigns_baltika.csv', sep='\t', encoding='utf8')
+campaigns_list = pd.read_csv(report_directory + r'\campaigns.csv', sep='\t', encoding='utf8')
 
 # Указываем имя файла с отчетом, в который будем выгружать данные по API
-file_name = report_directory + r'\campaigns_baltika_targeting_{}.xlsx'\
+file_name = report_directory + r'\campaigns_targeting_{}.xlsx'\
     .format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 # ===== Конец конфига параметров отчета =====
 
@@ -49,11 +49,15 @@ for campaign_id in campaigns_list['ID кампании']:
     n += 1
     for row in data:
         if row.find("name").text == 'UDP':
-            targeting_criteria['UDP gender'] = row.find("description").find("gender").text
-            targeting_criteria['UDP age'] = row.find("description").find("age").text
-            targeting_criteria['UDP revenue'] = row.find("description").find("revenue").text
+            targeting_criteria['UDP gender'] = row.find("description").find("gender").text.replace("По полу: ", "") \
+                if row.find("description").find("gender").text != "По полу: не задано" else ""
+            targeting_criteria['UDP age'] = row.find("description").find("age").text.replace("По возрасту: ", "") \
+                if row.find("description").find("age").text != "По возрасту: не задано" else ""
+            targeting_criteria['UDP revenue'] = row.find("description").find("revenue").text.replace("По доходу: ", "")\
+                if row.find("description").find("revenue").text != "По доходу: не задано" else ""
         else:
-            targeting_criteria[row.find("name").text] = row.find("description").text
+            targeting_criteria[row.find("name").text] = row.find("description").text \
+                if row.find("description").text != "не&nbsp;задано" else ""
     targeting_data.append(targeting_criteria)
     campaigns_targeting_data_chunk = pd.DataFrame(targeting_data)
     campaigns_targeting_data = pd.concat([campaigns_targeting_data, campaigns_targeting_data_chunk], ignore_index=True)

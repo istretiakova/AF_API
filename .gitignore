@@ -1,1 +1,10 @@
 /af_venv/
+/af_api_notebooks/
+/MOAT/
+/af_api_lib.py
+/get_default_banners_info.py
+/main.py
+/probe.py
+/settings.py
+/settings_gpmd.py
+/test_file.tsv

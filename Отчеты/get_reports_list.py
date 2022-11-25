@@ -11,9 +11,10 @@ import requests
 import pandas as pd
 from datetime import datetime
 import json
+from settings import ADFOX_API_KEY
 
 
-key = 'db4e4155-53d9-4db1-a512-ee38a92f6621'
+key = 'ADFOX_API_KEY'
 headers = {'X-Yandex-API-Key': key,
            'Content-Type': 'application/json'}
 

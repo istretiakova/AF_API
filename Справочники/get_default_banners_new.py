@@ -13,7 +13,7 @@ from datetime import datetime
 import xmltodict
 from settings import ADFOX_API_KEY
 
-list_place_ids = pd.read_excel(r'F:\WORK\AdFox\API_Reports\05.07.2022\places.xlsx')['ID площадки']
+list_place_ids = pd.read_excel(r'F:\WORK\AdFox\API_Reports\02.11.2022\places.xlsx')['ID площадки']
 
 default_banners_info_rows = []
 
@@ -52,11 +52,17 @@ for place_id in list_place_ids:
         default_banner_data = {}
         for item in data.items():
             default_banner_data[item[0]] = item[1]
+        if data['defaultCode'].find('VAST') > -1:
+            vast_data = xmltodict.parse(data['defaultCode'])
+            try:
+                default_banner_data['passback URL'] = vast_data['VAST']['Ad']['Wrapper']['VASTAdTagURI']
+            except:
+                default_banner_data['passback URL'] = ''
         default_banners_info_rows.append(default_banner_data)
 
 default_banners_info_list = pd.DataFrame(default_banners_info_rows)
 
-file_name = r'F:\WORK\AdFox\API_Reports\05.07.2022\default_banners_info_{}.xlsx'.format(
+file_name = r'F:\WORK\AdFox\API_Reports\02.11.2022\default_banners_info_{}.xlsx'.format(
     datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
 with pd.ExcelWriter(file_name) as writer:

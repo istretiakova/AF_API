@@ -14,16 +14,16 @@ from datetime import datetime
 from settings import ADFOX_API_KEY
 
 # ===== Начало конфига параметров отчета =====
-date_from = '2022-08-01'
-date_to = '2022-08-01'
-report_directory = r'F:\WORK\AdFox\API_Reports\02.08.2022'
+date_from = '2023-01-01'
+date_to = '2022-01-24'
+report_directory = r'F:\WORK\AdFox\API_Reports\25.01.2023'
 
 # В качестве справочника сайтов для постороения отчета берем стандартный отчет по сайтам из Adfox, здесь указываем
 # его имя
-sites_list = pd.read_excel(report_directory + r'\baltika_sites.xlsx')
+sites_list = pd.read_excel(report_directory + r'\sites1.xlsx')
 
 # Указываем имя файла с отчетом, в который будем выгружать данные по API
-file_name = report_directory + r'\baltika_DA_audienceInventoryYa_by_site_report_{}.xlsx'.format(
+file_name = report_directory + r'\DA_audienceInventoryDMP_by_site_report_{}.xlsx'.format(
     datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 # ===== Конец конфига параметров отчета =====
 
@@ -48,10 +48,11 @@ with writer:
         print(f'запрашиваем данные {site_num} сайта из {sites_num}: {site_id} {site_name}')
 
         report_params = {
-            'name': 'audienceInventoryYa',
-            'siteId': site_id,
+            'name': 'audienceInventoryDmp',
             'dateFrom': date_from,
-            'dateTo': date_to
+            'dateTo': date_to,
+            'siteId': site_id,
+            'audienceSegments': ''
         }
 
         task_response = requests.get('https://adfox.yandex.ru/api/report/site',

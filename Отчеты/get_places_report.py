@@ -10,17 +10,16 @@ Created on Fri Jun 26 12:19:26 2020
 import requests
 import pandas as pd
 from datetime import datetime
-import time
+from settings import ADFOX_API_KEY
 
 # Указать файл, полученный при помощи скрипта get_places_list.py
-places_list = pd.read_excel(r'F:\WORK\Объединение с ГПМД\Справочники\GPMD_places_info.xlsx', index_col=0)
-key = 'db4e4155-53d9-4db1-a512-ee38a92f6621'
-date_from = '2021-10-01'
-date_to = '2021-11-16'
+places_list = pd.read_excel(r'F:\WORK\AdFox\API_Reports\25.01.2023\places_info.xlsx', index_col=0)
+date_from = '2023-01-24'
+date_to = '2023-01-24'
 
 days_report_table = pd.DataFrame()
 days_headers = {
-    'X-Yandex-API-Key': key,
+    'X-Yandex-API-Key': ADFOX_API_KEY,
     'Content-Type': 'application/json'
 }
 

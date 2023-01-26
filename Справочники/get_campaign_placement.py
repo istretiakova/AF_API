@@ -17,7 +17,7 @@ from settings_gpmd import ADFOX_API_KEY
 headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_file = r'F:\WORK\AdFox\API_Reports\11.07.2022\campaigns.csv'
+campaigns_file = r'F:\WORK\AdFox\API_Reports\12.12.2022\campaigns.csv'
 # Требования к файлу:
 #     - должен содержать ID кампаний в поле 'ID кампании'
 #     - должен содержать Название кампании в поле 'Название кампании'

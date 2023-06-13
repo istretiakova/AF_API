@@ -118,7 +118,7 @@ class AddInventory:
         print(f'Данные записаны в файл: {self.out_file}')
 
     def run(self):
-        self.add_sites()
+        # self.add_sites()
         self.add_sections()
         self.add_places()
         self.add_block_positions()

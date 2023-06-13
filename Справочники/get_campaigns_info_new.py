@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Wen Sep 22 18:56:11 2021
+Created on Wen Sep 28 18:56:11 2021
 
 @author: Irina Tretiakova
 
-Получаем общую информацию о кампаниях из списка кампаний
+Получаем общую информацию о суперкампаниях из списка суперкампаний
 
 """
 
@@ -14,17 +14,23 @@ import requests
 from datetime import datetime
 from settings import ADFOX_API_KEY
 
+# ===== Начало конфига параметров отчета =====
+report_directory = r'F:\WORK\AdFox\API_Reports\25.04.2023'
+
+# указываем название файла со списком ID суперкампаний
+supercampaigns_list = pd.read_csv(report_directory + r'\supercampaigns.csv', sep=';', encoding='utf8')
+
+# Указываем имя файла с отчетом, в который будем выгружать данные по API
+file_name = report_directory + r'\campaigns_info_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+# ===== Конец конфига параметров отчета =====
+
 headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\13.06.2023\baltika_campaigns.csv', sep=';', encoding='utf8')
-n = 1
-
 campaigns_info_rows = []
 
-for campaign_id in campaigns_list['ID кампании']:
-    print(f'{n} -> {campaign_id}')
-    n += 1
+for campaign_num, campaign_id in enumerate(supercampaigns_list['ID суперкампании']):
+    print(f'{campaign_num} -> {campaign_id}')
     params = (
         ('object', 'account'),
         ('action', 'list'),
@@ -51,7 +57,6 @@ for campaign_id in campaigns_list['ID кампании']:
 
 campaigns_info = pd.DataFrame(campaigns_info_rows)
 
-file_name = r'F:\WORK\AdFox\API_Reports\13.06.2023\baltika_campaigns_info_{}.xlsx'.\
-    format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+
 campaigns_info.to_excel(file_name)
 print('Отчет готов и находится здесь: {}'.format(file_name))

@@ -17,7 +17,7 @@ from settings import ADFOX_API_KEY
 headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\16.12.2022\campaigns.csv', sep=';', encoding='utf8')
+campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\13.06.2023\baltika_campaigns.csv', sep=';', encoding='utf8')
 
 campaigns_placement2_data = pd.DataFrame()
 n = 0
@@ -63,6 +63,6 @@ for campaign_id in campaigns_list['ID кампании']:
     
     campaigns_placement2_data = pd.concat([campaigns_placement2_data, campaigns_placement2_data_chunk], ignore_index=True)
 
-file_name = r'F:\WORK\AdFox\API_Reports\16.12.2022\campaigns_placement2_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+file_name = r'F:\WORK\AdFox\API_Reports\13.06.2023\baltika_campaigns_placement2_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 campaigns_placement2_data.to_excel(file_name)
 print('Отчет готов и находится здесь: {}'.format(file_name))

@@ -87,20 +87,27 @@ with writer:
                     value = child.text
                 site_data[child.tag] = value
 
-            if row.find("name").text.lower().find('smart') >= 0 \
+            if row.find("name").text.lower().find('archive') >= 0 \
+                    or row.find("name").text.lower().find('old') >= 0 \
+                    or row.find("name").text.lower().find('архив') >= 0:
+                s_type = 'archive'
+            elif row.find("name").text.lower().find('smart') >= 0 \
                     or row.find("name").text.lower().find('iptv') >= 0 \
                     or row.find("name").text.lower().find('connected tv') >= 0:
                 s_type = 'smart TV app'
+            elif row.find("name").text.lower().find('(bn)') >= 0:
+                if row.find("name").text.lower().find('(mobile)') >= 0:
+                    s_type = 'BN mobile'
+                else:
+                    s_type = 'BN'
+            elif row.find("name").text.lower().find('(mn)') >= 0:
+                s_type = 'MN'
             elif row.find("name").text.lower().find('(mobile)') >= 0 or row.find("name").text.lower().find(
                     '(vitrinatv) mobile') >= 0:
                 s_type = 'mobile app'
             elif row.find("name").text.lower().find('roll') >= 0 or row.find("name").text.lower().find(
                     'outstream') >= 0:
                 s_type = 'outstream web'
-            elif row.find("name").text.lower().find('(imn)') >= 0:
-                s_type = 'IMN'
-            elif row.find("name").text.lower().find('(ipn)') >= 0:
-                s_type = 'IPN'
             elif row.find("webmasterAccount").text is None \
                     or row.find("webmasterAccount").text.lower().find('test') >= 0 \
                     or row.find("name").text.lower().find('test') >= 0 \

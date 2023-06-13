@@ -109,7 +109,7 @@ def get_templates_info(key, templates_list, files_url):
 
 files_url = r'F:\WORK\AdFox\API_Reports\25.10.2022\\'
 out_file = f'{files_url}templates_info_{datetime.now().strftime("%Y-%m-%d-%H%M%S")}.xlsx'
-banner_type_id = 128959
+banner_type_id = 86755
 
 # =======Конец конфига=======
 

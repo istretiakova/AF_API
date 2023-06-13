@@ -13,7 +13,7 @@ from datetime import datetime
 import xmltodict
 from settings import ADFOX_API_KEY
 
-list_place_ids = pd.read_excel(r'F:\WORK\AdFox\API_Reports\25.11.2022\places.xlsx')['ID площадки']
+list_place_ids = pd.read_excel(r'F:\WORK\AdFox\API_Reports\17.02.2023\places.xlsx')['ID площадки']
 
 default_banners_info_rows = []
 
@@ -62,7 +62,7 @@ for place_id in list_place_ids:
 
 default_banners_info_list = pd.DataFrame(default_banners_info_rows)
 
-file_name = r'F:\WORK\AdFox\API_Reports\02.11.2022\default_banners_info_{}.xlsx'.format(
+file_name = r'F:\WORK\AdFox\API_Reports\17.02.2023\default_banners_info_{}.xlsx'.format(
     datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
 with pd.ExcelWriter(file_name) as writer:

@@ -15,7 +15,7 @@ from datetime import datetime
 from settings import ADFOX_API_KEY
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\13.06.2023'
+report_directory = r'F:\WORK\AdFox\API_Reports\27.02.2023'
 
 # указываем название файла со списком ID суперкампаний
 supercampaigns_list = pd.read_csv(report_directory + r'\supercampaigns.csv', sep=';', encoding='utf8')
@@ -27,7 +27,7 @@ file_name = report_directory + r'\supercampaigns_info_{}.xlsx'.format(datetime.n
 headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
 url = 'https://adfox.yandex.ru/api/v1'
 
-supercampaigns_info_rows = []
+writer = pd.ExcelWriter(file_name)
 
 for supercampaign_num, supercampaign_id in enumerate(supercampaigns_list['ID суперкампании']):
     print(f'{supercampaign_num} -> {supercampaign_id}')
@@ -45,18 +45,24 @@ for supercampaign_num, supercampaign_id in enumerate(supercampaigns_list['ID с�
     root = ET.fromstring(response.text)
     data = root.find("result").find("data")
 
+    supercampaign_data = {}
     for row in data:
-        supercampaign_data = {}
         for child in list(row):
             try:
                 value = int(child.text)
             except:
                 value = child.text
             supercampaign_data[child.tag] = value
-        supercampaigns_info_rows.append(supercampaign_data)
 
-campaigns_info = pd.DataFrame(supercampaigns_info_rows)
+    supercampaign_info = pd.DataFrame(supercampaign_data)
 
 
-campaigns_info.to_excel(file_name)
+    with writer:
+        if supercampaign_num == 0:
+            supercampaign_info.to_excel(writer, sheet_name='data', index=False)
+        else:
+            supercampaign_info.to_excel(writer, sheet_name='data', startrow=supercampaign_num + 2, header=False,
+                                        index=False)
+
+
 print('Отчет готов и находится здесь: {}'.format(file_name))

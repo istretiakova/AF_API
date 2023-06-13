@@ -4,7 +4,7 @@ Created on Fri Oct 28 17:44:36 2021
 
 @author: Irina Tretiakova
 
-Изменяем код дефолтного баннера для списка площадок на универсальный
+Изменяем трекер в дефолтном баннере
 
 """
 
@@ -21,8 +21,8 @@ url = 'https://adfox.yandex.ru/api/v1'
 
 # ==========Конфиг==========
 
-files_url = r'F:\WORK\AdFox\API_Reports\25.11.2022\\'
-in_file = f'{files_url}places.csv'
+files_url = r'F:\WORK\AdFox\API_Reports\17.02.2023\\'
+in_file = f'{files_url}places2.csv'
 out_file = f'{files_url}places_default_trackers_changes_{datetime.now().strftime("%Y-%m-%d-%H%M%S")}.xlsx'
 
 # =======Конец конфига=======
@@ -49,12 +49,15 @@ for n, place_id in enumerate(places_list):
     get_response = requests.get(url, params=get_params, headers=headers)
     get_response_dict = xmltodict.parse(get_response.text)
 
-    tracker_for_remove = 'https://www.tns-counter.ru/V13a**%request.eid3%**idsh_vmon/ru/CP1251/' \
-                         'tmsec=idsh_dtotal/%request.timestamp%|'
+    block_for_modify = '    <Error><![CDATA[https://bridgertb.tech/ssp/sync/da_bridge?sspuid=%request.eid3%]]></Error>\n' \
+                       '    <Error><![CDATA[https://px802%system.random%.mediahils.ru/s.gif?userid=%request.eid3%&media=video]]></Error>'
+
+    modified_block = '    <Error><![CDATA[https://bridgertb.tech/ssp/sync/da_bridge?sspuid=%request.eid3%]]></Error>\n' \
+                     '    <Error><![CDATA[https://dmg.digitaltarget.ru/1/7522/i/i?type=show]]></Error>\n' \
+                     '    <Error><![CDATA[https://px802%system.random%.mediahils.ru/s.gif?userid=%request.eid3%&media=video]]></Error>'
 
     old_default_code = get_response_dict['response']['result']['data']['row0']['defaultCode']
-    new_default_code = old_default_code.replace(tracker_for_remove, '')
-
+    new_default_code = old_default_code.replace(block_for_modify, modified_block)
 
     set_params = (
         ('object', 'place'),

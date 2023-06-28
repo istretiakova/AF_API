@@ -3,6 +3,7 @@ import requests
 import xml.etree.ElementTree as ET
 from settings import ADFOX_API_KEY
 from utils import base_10_to_alphabet
+from datetime import datetime
 
 
 class AddInventory:
@@ -11,7 +12,7 @@ class AddInventory:
         self.headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
         self.url = 'https://adfox.yandex.ru/api/v1'
         self.in_file = 'vn_add_inventory.xlsx' if in_file is None else in_file
-        self.out_file = 'vn_new_inventory.xlsx' if out_file is None else out_file
+        self.out_file = 'vn_new_inventory_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S")) if out_file is None else out_file
         self.block_pos_num = 6 if block_pos_num is None else block_pos_num
         self.inventory_data = pd.read_excel(self.in_file)
         self.new_sites_list = None

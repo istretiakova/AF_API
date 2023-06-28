@@ -58,7 +58,7 @@ total_rows = limit + 1
 page = 0
 rows = 0
 
-writer = pd.ExcelWriter(file_name, engine='xlsxwriter', options={'strings_to_urls': False})
+writer = pd.ExcelWriter(file_name, engine='xlsxwriter')
 
 with writer:
     while rows + (page - 1) * limit < total_rows:

@@ -7,8 +7,10 @@ from settings import ADFOX_API_KEY
 
 
 def get_dates():
-    date_from = datetime.strftime(datetime(datetime.now().year, datetime.now().month, 1), '%Y-%m-%d')
-    date_to = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
+    # date_from = datetime.strftime(datetime(datetime.now().year, datetime.now().month, 1), '%Y-%m-%d')
+    # date_to = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
+    date_from = "2023-07-01"
+    date_to = "2023-07-31"
     return date_from, date_to
 
 

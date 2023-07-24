@@ -17,7 +17,7 @@ from settings import ADFOX_API_KEY
 headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\01.06.2023\sizmek_campaigns.csv', sep='\t', encoding='utf8')
+campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\18.07.2023\campaigns.csv', sep='\t', encoding='utf8')
 campaign_ids_list = campaigns_list['ID кампании'].to_string(header=False, index=False).replace('\n', ',').replace(' ',
                                                                                                                   '')
 
@@ -28,7 +28,7 @@ total_rows = limit + 1
 page = 0
 rows = 0
 
-file_name = r'F:\WORK\AdFox\API_Reports\01.06.2023\sizmek_banners_info_{}.xlsx'.\
+file_name = r'F:\WORK\AdFox\API_Reports\18.07.2023\banners_info_{}.xlsx'.\
     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
 writer = pd.ExcelWriter(file_name)

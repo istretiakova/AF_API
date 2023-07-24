@@ -24,7 +24,7 @@ total_rows = limit + 1
 page = 0
 rows = 0
 
-puid_n = 6
+puid_n = 60
 
 params = (
             ('object', 'userCriteria'),

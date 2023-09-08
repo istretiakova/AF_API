@@ -2,7 +2,7 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
 
 def get_dates():
@@ -13,7 +13,7 @@ def get_dates():
 
 def get_vitrina_report(date_from, date_to):
     report_id = '4843'
-    headers = {'X-Yandex-API-Key': ADFOX_API_KEY,
+    headers = {'Authorization': 'OAuth ' + TOKEN,
                'Content-Type': 'application/json'}
 
     task_url = 'https://adfox.yandex.ru/api/report/owner'

@@ -15,13 +15,13 @@ from datetime import datetime
 from settings import ADFOX_API_KEY
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\13.06.2023'
+report_directory = r'F:\WORK\AdFox\API_Reports\16.08.2023'
 
 # указываем название файла со списком ID кампаний
-campaigns_list = pd.read_csv(report_directory + r'\baltika_campaigns.csv', sep='\t', encoding='utf8')
+campaigns_list = pd.read_csv(report_directory + r'\wasd_campaigns.csv', sep='\t', encoding='utf8')
 
 # Указываем имя файла с отчетом, в который будем выгружать данные по API
-file_name = report_directory + r'\baltika_campaigns_targeting_{}.xlsx'\
+file_name = report_directory + r'\wasd_campaigns_targeting_{}.xlsx'\
     .format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 # ===== Конец конфига параметров отчета =====
 

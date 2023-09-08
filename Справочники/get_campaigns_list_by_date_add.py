@@ -3,22 +3,18 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
-from settings import TOKEN
+from settings import ADFOX_API_KEY
 
-# file_name = r'F:\WORK\_PBI\Campaigns_list\campaigns_list_{}.xlsx'.\
-#     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
-
-file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Campaigns_list\campaigns_list_17-21aug2023.xlsx'
 
 def get_dates():
-    date_from = "2023-08-17"
-    date_to = "2023-08-21"
+    date_from = "2023-06-01"
+    date_to = "2023-07-31"
     return date_from, date_to
 
 
 def get_campaign_ids_list(date_from, date_to):
     report_id = '4795'
-    headers = {'Authorization': 'OAuth ' + TOKEN,
+    headers = {'X-Yandex-API-Key': ADFOX_API_KEY,
                'Content-Type': 'application/json'}
 
     task_url = 'https://adfox.yandex.ru/api/report/owner'
@@ -41,24 +37,9 @@ def get_campaign_ids_list(date_from, date_to):
 
 
 def get_campaign_info(campaign_id):
-    headers = {'Authorization': 'OAuth ' + TOKEN}
+    headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
     url = 'https://adfox.yandex.ru/api/v1'
     campaign_data = {}
-    fields = {'ID': 'Campaign ID',
-              'name': 'Campaign Name',
-              'superCampaignID': 'Supercampaign ID',
-              'status': 'status',
-              'level': 'level',
-              'priority': 'priority',
-              'impressionsMethodID': 'impressionsMethodID',
-              'impressionsSmoothTypeID': 'impressionsSmoothTypeID',
-              'maxImpressions': 'maxImpressions',
-              'maxImpressionsPerDay': 'maxImpressionsPerDay',
-              'dateStart': 'Campaign dateStart',
-              'dateEnd': 'Campaign dateEnd',
-              'dateFinished': 'Campaign dateFinished',
-              'dateAdded': 'Campaign dateAdded'}
-
     params = (
         ('object', 'account'),
         ('action', 'list'),
@@ -75,10 +56,8 @@ def get_campaign_info(campaign_id):
 
     for row in data:
         for child in list(row):
-            if child.tag in fields.keys():
-                field_name = fields[child.tag]
-                value = child.text
-                campaign_data[field_name] = value
+            value = child.text
+            campaign_data[child.tag] = value
 
     return campaign_data
 
@@ -99,5 +78,9 @@ date_from, date_to = get_dates()
 campaign_ids_list = get_campaign_ids_list(date_from, date_to)
 campaigns_info = create_campaigns_info(campaign_ids_list)
 
-# print(campaigns_info)
-campaigns_info.to_excel(file_name)
+file_name = r'F:\WORK\AdFox\API_Reports\14.11.2022\campaigns_{}.xlsx'.format(
+    datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+
+writer = pd.ExcelWriter(file_name)
+
+with writer:

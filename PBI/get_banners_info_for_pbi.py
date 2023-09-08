@@ -3,18 +3,22 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
+# file_name = r'F:\WORK\_PBI\Banners_list\banners_list_{}.xlsx'.\
+#     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Banners_list\banners_list_17-21aug2023.xlsx'
 
 def get_dates():
-    date_from = "2023-07-01"
-    date_to = "2023-07-31"
+    date_from = "2023-08-17"
+    date_to = "2023-08-21"
     return date_from, date_to
 
 
 def get_campaigns_list_chunks(date_from, date_to):
     report_id = '4795'
-    headers = {'X-Yandex-API-Key': ADFOX_API_KEY,
+    headers = {'Authorization': 'OAuth ' + TOKEN,
                'Content-Type': 'application/json'}
 
     task_url = 'https://adfox.yandex.ru/api/report/owner'
@@ -33,7 +37,7 @@ def get_campaigns_list_chunks(date_from, date_to):
     campaigns_list = list(pd.DataFrame(data=report_response.json()['result']['table'],
                                        columns=report_response.json()['result']['fields'])['campaignId'])
 
-    campaigns_list_chunks = [campaigns_list[x:x+500] for x in range(0, len(campaigns_list), 500)]
+    campaigns_list_chunks = [campaigns_list[x:x+300] for x in range(0, len(campaigns_list), 300)]
 
     return campaigns_list_chunks
 
@@ -60,7 +64,7 @@ def banners_info(campaigns_list_chunks):
     for chunk in campaigns_list_chunks:
 
         campaign_ids_list = ','.join(str(x) for x in chunk)
-        headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+        headers = {'Authorization': 'OAuth ' + TOKEN}
         url = 'https://adfox.yandex.ru/api/v1'
         limit = 1000
         offset = 0
@@ -106,4 +110,5 @@ date_from, date_to = get_dates()
 campaigns_list_chunks = get_campaigns_list_chunks(date_from, date_to)
 banners_info = banners_info(campaigns_list_chunks)
 
-print(banners_info)
+# print(banners_info)
+banners_info.to_excel(file_name)

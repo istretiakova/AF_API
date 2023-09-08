@@ -3,20 +3,22 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
+# file_name = r'F:\WORK\_PBI\Supercampaigns_list\supercampaigns_list_{}.xlsx'.\
+#     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_17-21aug2023.xlsx'
 
 def get_dates():
-    # date_from = datetime.strftime(datetime(datetime.now().year, datetime.now().month, 1), '%Y-%m-%d')
-    # date_to = datetime.strftime(datetime.now() - timedelta(1), '%Y-%m-%d')
-    date_from = "2023-07-01"
-    date_to = "2023-07-31"
+    date_from = "2023-08-17"
+    date_to = "2023-08-21"
     return date_from, date_to
 
 
 def get_supercampaign_ids_list(date_from, date_to):
     report_id = '4798'
-    headers = {'X-Yandex-API-Key': ADFOX_API_KEY,
+    headers = {'Authorization': 'OAuth ' + TOKEN,
                'Content-Type': 'application/json'}
 
     task_url = 'https://adfox.yandex.ru/api/report/owner'
@@ -39,7 +41,7 @@ def get_supercampaign_ids_list(date_from, date_to):
 
 
 def get_supercampaign_info(supercampaign_id):
-    headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+    headers = {'Authorization': 'OAuth ' + TOKEN}
     url = 'https://adfox.yandex.ru/api/v1'
     supercampaign_data = {}
     fields = {'ID': 'Supercampaign ID',
@@ -104,4 +106,5 @@ date_from, date_to = get_dates()
 supercampaign_ids_list = get_supercampaign_ids_list(date_from, date_to)
 supercampaigns_info = create_supercampaigns_info(supercampaign_ids_list)
 
-print(supercampaigns_info)
+# print(supercampaigns_info)
+supercampaigns_info.to_excel(file_name)

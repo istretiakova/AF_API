@@ -1,11 +1,15 @@
 import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
+from datetime import datetime
 
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
-headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
+
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Catalogs\places_list_{}.xlsx'.\
+    format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
 limit = 1000
 offset = 0
@@ -59,4 +63,5 @@ while rows + (page - 1) * limit < total_rows:
 
 places_list = pd.DataFrame(places_info_rows)
 
-print(places_list)
+# print(places_list)
+places_list.to_excel(file_name)

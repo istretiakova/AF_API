@@ -8,11 +8,11 @@ from settings import TOKEN
 # file_name = r'F:\WORK\_PBI\Supercampaigns_list\supercampaigns_list_{}.xlsx'.\
 #     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
-file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_17-21aug2023.xlsx'
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_28sep-10oct2023.xlsx'
 
 def get_dates():
-    date_from = "2023-08-17"
-    date_to = "2023-08-21"
+    date_from = "2023-09-28"
+    date_to = "2023-10-10"
     return date_from, date_to
 
 

@@ -12,12 +12,12 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
 from datetime import datetime
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
-headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\16.08.2023\wasd_campaigns.csv', sep=';', encoding='utf8')
+campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\28.09.2023\campaigns.csv', sep=';', encoding='utf8')
 
 campaigns_placement2_data = pd.DataFrame()
 n = 0
@@ -63,6 +63,6 @@ for campaign_id in campaigns_list['ID кампании']:
     
     campaigns_placement2_data = pd.concat([campaigns_placement2_data, campaigns_placement2_data_chunk], ignore_index=True)
 
-file_name = r'F:\WORK\AdFox\API_Reports\16.08.2023\wasd_campaigns_placement2_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+file_name = r'F:\WORK\AdFox\API_Reports\28.09.2023\campaigns_placement2_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 campaigns_placement2_data.to_excel(file_name)
 print('Отчет готов и находится здесь: {}'.format(file_name))

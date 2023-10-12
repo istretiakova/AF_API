@@ -8,16 +8,18 @@ from settings import TOKEN
 # file_name = r'F:\WORK\_PBI\Banners_list\banners_list_{}.xlsx'.\
 #     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
-file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Banners_list\banners_list_28sep-10oct2023.xlsx'
+file_name = r'F:\WORK\AdFox\API_Reports\15.09.2023\bn_banners_list{}.xlsx'.\
+    format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
+
 
 def get_dates():
-    date_from = "2023-09-28"
-    date_to = "2023-10-10"
+    date_from = "2023-08-01"
+    date_to = "2023-09-14"
     return date_from, date_to
 
 
 def get_campaigns_list_chunks(date_from, date_to):
-    report_id = '4795'
+    report_id = '5447'
     headers = {'Authorization': 'OAuth ' + TOKEN,
                'Content-Type': 'application/json'}
 
@@ -51,15 +53,11 @@ def banners_info(campaigns_list_chunks):
               'dateStart': 'Banner dateStart',
               'dateEnd': 'Banner dateEnd',
               'dateAdded': 'Banner dateAdded',
-              'parameter1': 'Media URL',
-              'parameter2': 'Click URL',
-              'parameter4': 'Duration',
-              'parameter7': 'URLMOD final',
-              'parameter9': 'impression1',
-              'parameter10': 'impression2',
-              'parameter11': 'impression3',
-              'parameter12': 'impression4',
-              'parameter24': 'skipTime'}
+              'parameter1': 'Click URL',
+              'parameter2': 'parameter2',
+              'parameter3': 'parameter3',
+              'parameter4': 'parameter4',
+              'parameter5': 'parameter5'}
 
     for chunk in campaigns_list_chunks:
 

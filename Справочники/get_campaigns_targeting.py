@@ -12,20 +12,20 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
 from datetime import datetime
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\16.08.2023'
+report_directory = r'F:\WORK\AdFox\API_Reports\28.09.2023'
 
 # указываем название файла со списком ID кампаний
-campaigns_list = pd.read_csv(report_directory + r'\wasd_campaigns.csv', sep='\t', encoding='utf8')
+campaigns_list = pd.read_csv(report_directory + r'\campaigns.csv', sep='\t', encoding='utf8')
 
 # Указываем имя файла с отчетом, в который будем выгружать данные по API
-file_name = report_directory + r'\wasd_campaigns_targeting_{}.xlsx'\
+file_name = report_directory + r'\campaigns_targeting_{}.xlsx'\
     .format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 # ===== Конец конфига параметров отчета =====
 
-headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
 campaigns_targeting_data = pd.DataFrame()

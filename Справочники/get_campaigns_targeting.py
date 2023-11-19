@@ -15,7 +15,7 @@ from datetime import datetime
 from settings import TOKEN
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\28.09.2023'
+report_directory = r'F:\WORK\AdFox\API_Reports\15.11.2023'
 
 # указываем название файла со списком ID кампаний
 campaigns_list = pd.read_csv(report_directory + r'\campaigns.csv', sep='\t', encoding='utf8')

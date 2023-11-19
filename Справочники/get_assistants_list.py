@@ -12,10 +12,10 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
 from datetime import datetime
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
 
-headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
 file_name = r'F:\WORK\AdFox\Справочники\DA_assistants_list_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))

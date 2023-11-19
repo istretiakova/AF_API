@@ -1,18 +1,14 @@
 import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
 
 from settings import TOKEN
 
-# file_name = r'F:\WORK\_PBI\Supercampaigns_list\supercampaigns_list_{}.xlsx'.\
-#     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
-
-file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_28sep-10oct2023.xlsx'
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_11-12nov2023.xlsx'
 
 def get_dates():
-    date_from = "2023-09-28"
-    date_to = "2023-10-10"
+    date_from = "2023-11-11"
+    date_to = "2023-11-12"
     return date_from, date_to
 
 

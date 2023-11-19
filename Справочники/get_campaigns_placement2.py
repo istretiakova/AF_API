@@ -17,7 +17,7 @@ from settings import TOKEN
 headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\28.09.2023\campaigns.csv', sep=';', encoding='utf8')
+campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\15.11.2023\campaigns.csv', sep=';', encoding='utf8')
 
 campaigns_placement2_data = pd.DataFrame()
 n = 0

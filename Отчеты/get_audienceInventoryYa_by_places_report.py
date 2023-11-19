@@ -68,11 +68,10 @@ with writer:
                                      params=report_params, headers=report_headers)
         print(pd.DataFrame(task_response.json())['result']['taskId'])
 
-        while report_data.loc['state', 'result'] != 'SUCCESS':
-            report_url = 'https://adfox.yandex.ru/api/report/result?taskId=' + \
+        report_url = 'https://adfox.yandex.ru/api/report/result?taskId=' + \
                          pd.DataFrame(task_response.json())['result']['taskId']
-            report_response = requests.get(report_url, headers=report_headers)
-            report_data = pd.DataFrame(report_response.json())
+        report_response = requests.get(report_url, headers=report_headers)
+        report_data = pd.DataFrame(report_response.json())
 
         report_table_chunk = pd.DataFrame(report_data.loc['table', 'result'],
                                           columns=report_data.loc['fields', 'result'])

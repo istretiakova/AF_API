@@ -15,7 +15,7 @@ from datetime import datetime
 from settings import ADFOX_API_KEY
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\25.04.2023'
+report_directory = r'F:\WORK\AdFox\API_Reports\23.11.2023'
 
 # указываем название файла со списком ID суперкампаний
 supercampaigns_list = pd.read_csv(report_directory + r'\supercampaigns.csv', sep=';', encoding='utf8')

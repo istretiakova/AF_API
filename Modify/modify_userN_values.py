@@ -41,5 +41,5 @@ class ModifyUserNValues:
 
 
 if __name__ == '__main__':
-    process = ModifyUserNValues(in_file='upd_user60_values.xlsx', userN=60)
+    process = ModifyUserNValues(in_file='upd_user60_values_05122023_2.xlsx', userN=60)
     process.run()

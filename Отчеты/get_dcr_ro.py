@@ -1,17 +1,34 @@
 import requests
+import time
+import smtplib
 import pandas as pd
 import xml.etree.ElementTree as ET
-from datetime import datetime, timedelta
-import time
-from settings import TOKEN, EMAIL_LOGIN, EMAIL_PASSWD, EMAIL_FROM, EMAIL_TO, EMAIL_MESSAGE, EMAIL_SUBJECT, \
-    EMAIL_SMTP_SERVER
 
-import smtplib
+from datetime import datetime, timedelta
 from os.path import basename
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.utils import formatdate
+
+# ================ Report config =====================
+
+TOKEN = "y0_AgAAAAByRwBUAAr_jgAAAAD04Qm5-BwSIPkOQb6FoeIhgRwzK_Pe59A"
+BANNERS_DATA_REPORT_ID = "6153"
+REPORT_PATH = r'F:\WORK\AdFox\API_Reports\DCR'
+
+EMAIL_SMTP_SERVER = 'mail.axkv.ru'
+EMAIL_PASSWD = 'vI5ykKwkgo'
+EMAIL_FROM = 'noreply@axkv.ru'
+EMAIL_TO = ['itretiakova@alliance.digital', 'emelnikov@alliance.digital']
+
+EMAIL_MESSAGE = 'Пожалуйста НЕ ОТВЕЧАЙТЕ на это письмо, оно прислано роботом.\n' \
+                'Отчет находится в приложении, его можно открыть в Microsoft Excel.'
+
+EMAIL_SUBJECT = 'TEST!!! DA : DCR : Ежедневный отчет по креативам NEW'
+
+# ================ Report config end =====================
+
 
 class GetDcrReport:
     """
@@ -30,10 +47,12 @@ class GetDcrReport:
         self.banners_info_rows = []
         self.banners_info = pd.DataFrame()
         self.advertisers_list = pd.DataFrame()
+        self.assistants_list = pd.DataFrame()
         self.report_header = []
         self.banners_list = pd.DataFrame()
 
     def set_dates(self):
+        print('Задаем период отчета set_dates()')
         if self.report_date.day == 1:
             self.date_from = (self.report_date - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
             self.date_to = (self.report_date - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -53,13 +72,13 @@ class GetDcrReport:
             ['Date from', self.date_from],
             ['Date to', self.date_to]
         ]
-        self.out_file_name = r'F:\WORK\AdFox\API_Reports\DCR\dcr-report_01-{}_{}.xlsx'. \
-            format(datetime.strptime(self.date_to, '%Y-%m-%d').strftime('%d.%m.%Y'),
+        self.out_file_name = r'{}\dcr-report_01-{}_{}.xlsx'. \
+            format(REPORT_PATH, datetime.strptime(self.date_to, '%Y-%m-%d').strftime('%d.%m.%Y'),
                    datetime.now().strftime("%Y%m%d%H%M%S"))
 
-    def get_banners_list(self):
+    def get_basic_banners_data(self):
         print('Получаем список баннеров текущего месяца get_banners_impressions(self)')
-        report_id = '5945'
+        report_id = BANNERS_DATA_REPORT_ID
         headers = {'Authorization': 'OAuth ' + TOKEN,
                    'Content-Type': 'application/json'}
 
@@ -82,37 +101,130 @@ class GetDcrReport:
             report_response = requests.get(report_url, headers=headers)
         print(f"report state = {report_response.json()['result']['state']}")
         self.banners_list = pd.DataFrame(data=report_response.json()['result']['table'],
-                                         columns=report_response.json()['result']['fields'])
+                                               columns=report_response.json()['result']['fields'])
         print(self.banners_list.info())
 
     def get_campaigns_list_chunks(self):
         print('Получаем список кампаний текущего месяца get_campaigns_list_chunks(self)')
-        report_id = '4795'
-        headers = {'Authorization': 'OAuth ' + TOKEN,
-                   'Content-Type': 'application/json'}
-
-        task_url = 'https://adfox.yandex.ru/api/report/owner'
-        task_params = (
-            ('name', 'custom_' + report_id),
-            ('dateFrom', self.date_from),
-            ('dateTo', self.date_to)
-        )
-
-        task_response = requests.get(task_url, params=task_params, headers=headers)
-        task_id = task_response.json()['result']['taskId']
-
-        report_url = "https://adfox.yandex.ru/api/report/result?taskId=" + task_id
-        report_response = requests.get(report_url, headers=headers)
-
-        while report_response.json()['result']['state'] != 'SUCCESS':
-            print(f"report state = {report_response.json()['result']['state']}")
-            time.sleep(10)
-            report_response = requests.get(report_url, headers=headers)
-        print(f"report state = {report_response.json()['result']['state']}")
-        campaigns_list = list(pd.DataFrame(data=report_response.json()['result']['table'],
-                                           columns=report_response.json()['result']['fields'])['campaignId'])
+        campaigns_list = list(self.banners_list['campaignId'].unique())
         self.campaigns_list_chunks = [campaigns_list[x:x + 300] for x in range(0, len(campaigns_list), 300)]
         print(f'Получили {len(self.campaigns_list_chunks)} списка ID кампаний\r\n')
+        print(f'Всего ID кампаний - {len(campaigns_list)}')
+
+    def get_banners_list_chunk(self, campaigns_list):
+        print(f'\r\nПолучаем инфо о баннерах из {self.banners_chunk + 1} '
+              f'части списка кампаний get_banners_list_chunk(self, campaigns_list)')
+        campaign_ids_list = ','.join(str(x) for x in campaigns_list)
+        headers = {'Authorization': 'OAuth ' + TOKEN}
+        url = 'https://adfox.yandex.ru/api/v1'
+        limit = 1000
+        offset = 0
+        total_rows = limit + 1
+        page = 0
+        rows = 0
+        while rows + (page - 1) * limit < total_rows:
+            print(f'Данные для {page + 1} группы баннеров из {self.banners_chunk + 1} '
+                  f'списка ID запрошены и обрабатываются')
+            params = (
+                ('object', 'account'),
+                ('action', 'list'),
+                ('actionObject', 'banner'),
+                ('listCampaignIDs', campaign_ids_list),
+                ('offset', offset),
+                ('limit', limit),
+                ('encoding', 'UTF-8')
+            )
+
+            response = requests.get(url, params=params, headers=headers)
+            root = ET.fromstring(response.text)
+            data = root.find("result").find("data")
+            for row in data:
+                banner_data = {}
+                for child in list(row):
+                    try:
+                        value = int(child.text)
+                    except:
+                        value = child.text
+                    banner_data[child.tag] = value
+                self.banners_info_rows.append(banner_data)
+            offset += limit
+            page += 1
+        self.banners_chunk += 1
+
+    def get_banners_info_list(self):
+        print('Запускаем сбор инфо о баннерах из кампаний текущего месяца get_banners_list(self)')
+        for chunk in self.campaigns_list_chunks:
+            self.get_banners_list_chunk(chunk)
+        print('Записываем инфо о баннерах из кампаний текущего месяца в датафрейм')
+        self.banners_info = pd.DataFrame(self.banners_info_rows)
+        print(self.banners_info.info())
+
+    @staticmethod
+    def get_account_list(fields, action_object):
+        print(f'\nВыгружаем справочник {action_object} get_account_list()')
+        headers = {'Authorization': 'OAuth ' + TOKEN}
+        url = 'https://adfox.yandex.ru/api/v1'
+        limit = 1000
+        offset = 0
+        total_rows = limit + 1
+        page = 0
+        rows = 0
+
+        action_oblect_info_rows = []
+
+        while rows + (page - 1) * limit < total_rows:
+            print('Данные страницы {} запрошены и обрабатываются'.format(page + 1))
+
+            params = (
+                ('object', 'account'),
+                ('action', 'list'),
+                ('actionObject', action_object),
+                ('offset', offset),
+                ('limit', limit),
+                ('encoding', 'UTF-8')
+            )
+
+            response = requests.get(url, params=params, headers=headers)
+            root = ET.fromstring(response.text)
+
+            total_pages = int(root.find('result').find('total_pages').text)
+            page = int(root.find('result').find('page').text)
+            total_rows = int(root.find('result').find('total_rows').text)
+            rows = int(root.find('result').find('rows').text)
+
+            data = root.find("result").find("data")
+
+            for row in data:
+                action_oblect_data = {}
+                for child in list(row):
+                    if child.tag in fields:
+                        field_name = fields[child.tag]
+                        try:
+                            value = int(child.text)
+                        except:
+                            value = child.text
+                        action_oblect_data[field_name] = value
+                action_oblect_info_rows.append(action_oblect_data)
+            offset += limit
+
+        return action_oblect_info_rows
+
+    def get_advertisers_list(self):
+        print('\nВыгружаем справочник рекламодателей get_advertisers_list()')
+        fields = {'ID': 'Advertiser ID',
+                  'account': 'Advertiser name',
+                  'company': 'Advertiser company'}
+        action_object = 'advertiser'
+        self.advertisers_list = pd.DataFrame(self.get_account_list(fields, action_object))
+        print(self.advertisers_list.info())
+
+    def get_assistants_list(self):
+        print('\nВыгружаем справочник ассистентов get_advertisers_list()')
+        fields = {'ID': 'Assistant ID',
+                  'account': 'Assistant name'}
+        action_object = 'assistant'
+        self.assistants_list = pd.DataFrame(self.get_account_list(fields, action_object))
+        print(self.assistants_list.info())
 
     @staticmethod
     def get_mediaplan_id(campaign_name):
@@ -207,123 +319,37 @@ class GetDcrReport:
             dropoff = ''
         return dropoff
 
-    def get_banners_list_chunk(self, campaigns_list):
-        print(f'\r\nПолучаем инфо о баннерах из {self.banners_chunk + 1} '
-              f'части списка кампаний get_banners_list_chunk(self, campaigns_list)')
-        campaign_ids_list = ','.join(str(x) for x in campaigns_list)
-        headers = {'Authorization': 'OAuth ' + TOKEN}
-        url = 'https://adfox.yandex.ru/api/v1'
-        limit = 1000
-        offset = 0
-        total_rows = limit + 1
-        page = 0
-        rows = 0
-        while rows + (page - 1) * limit < total_rows:
-            print(f'Данные для {page + 1} группы баннеров из {self.banners_chunk + 1} '
-                  f'списка ID запрошены и обрабатываются')
-            params = (
-                ('object', 'account'),
-                ('action', 'list'),
-                ('actionObject', 'banner'),
-                ('listCampaignIDs', campaign_ids_list),
-                ('offset', offset),
-                ('limit', limit),
-                ('encoding', 'UTF-8')
-            )
-
-            response = requests.get(url, params=params, headers=headers)
-            root = ET.fromstring(response.text)
-            data = root.find("result").find("data")
-            for row in data:
-                banner_data = {}
-                for child in list(row):
-                    try:
-                        value = int(child.text)
-                    except:
-                        value = child.text
-                    banner_data[child.tag] = value
-                self.banners_info_rows.append(banner_data)
-            offset += limit
-            page += 1
-        self.banners_chunk += 1
-
-    def get_banners_info_list(self):
-        print('Запускаем сбор инфо о баннерах из кампаний текущего месяца get_banners_list(self)')
-        for chunk in self.campaigns_list_chunks:
-            self.get_banners_list_chunk(chunk)
-        print('Записываем инфо о баннерах из кампаний текущего месяца в датафрейм')
-        self.banners_info = pd.DataFrame(self.banners_info_rows)
-        print(self.banners_info.info())
-
-    def get_advertisers_list(self):
-        print('\nВыгружаем справочник рекламодателей get_advertisers_list()')
-        headers = {'Authorization': 'OAuth ' + TOKEN}
-        url = 'https://adfox.yandex.ru/api/v1'
-        limit = 1000
-        offset = 0
-        total_rows = limit + 1
-        page = 0
-        rows = 0
-
-        fields = {'ID': 'Advertiser ID',
-                  'company': 'Advertiser company'}
-
-        advertisers_info_rows = []
-
-        while rows + (page - 1) * limit < total_rows:
-            print('Данные страницы {} запрошены и обрабатываются'.format(page + 1))
-
-            params = (
-                ('object', 'account'),
-                ('action', 'list'),
-                ('actionObject', 'advertiser'),
-                ('offset', offset),
-                ('limit', limit),
-                ('encoding', 'UTF-8')
-            )
-
-            response = requests.get(url, params=params, headers=headers)
-            root = ET.fromstring(response.text)
-
-            total_pages = int(root.find('result').find('total_pages').text)
-            page = int(root.find('result').find('page').text)
-            total_rows = int(root.find('result').find('total_rows').text)
-            rows = int(root.find('result').find('rows').text)
-
-            data = root.find("result").find("data")
-
-            for row in data:
-                advertiser_data = {}
-                for child in list(row):
-                    if child.tag in fields:
-                        field_name = fields[child.tag]
-                        try:
-                            value = int(child.text)
-                        except:
-                            value = child.text
-                        advertiser_data[field_name] = value
-                advertisers_info_rows.append(advertiser_data)
-            offset += limit
-        self.advertisers_list = pd.DataFrame(advertisers_info_rows)
-
     def add_info_to_banners_list(self):
         print('\r\nОбъединяем список баннеров с инфо о баннерах add_info_to_banners_list(self)')
+        print('Добавляем к базовому инфо данные из справочника баннеров')
         self.banners_list = self.banners_list.merge(self.banners_info, how='inner',
                                                     left_on='bannerId', right_on='ID')
-        self.banners_list['status'] = self.banners_list['status'].apply(lambda x: self.get_status_name(x))
-        self.banners_list['Verifier'] = self.banners_list['parameter1'].apply(lambda x: self.get_verifier(x))
-        self.banners_list['Admon'] = self.banners_list['templateName'].apply(lambda x: self.get_admon_state(x))
-        self.banners_list['Mediaplan ID'] = self.banners_list['campaignName'].apply(lambda x: self.get_mediaplan_id(x))
+        print('Добавляем к базовому инфо данные из справочника рекламодателей')
         self.banners_list = self.banners_list.merge(self.advertisers_list, how='left',
                                                     left_on='advertiserId', right_on='Advertiser ID')
+        print('Добавляем к базовому инфо данные из справочника ассистентов')
+        self.banners_list = self.banners_list.merge(self.assistants_list, how='left',
+                                                    left_on='campaignAssistantId', right_on='Assistant ID')
+        print('Заменяем ID статуса на текст')
+        self.banners_list['status'] = self.banners_list['status'].apply(lambda x: self.get_status_name(x))
+        print('Добавляем верификатора')
+        self.banners_list['Verifier'] = self.banners_list['parameter1'].apply(lambda x: self.get_verifier(x))
+        print('Добавляем инфо про Admon')
+        self.banners_list['Admon'] = self.banners_list['templateName'].apply(lambda x: self.get_admon_state(x))
+        print('Выделяем из названия кампании ID медиаплана')
+        for idx, column in enumerate(self.banners_list.columns):
+            print(idx, column)
+        self.banners_list['Mediaplan ID'] = self.banners_list['campaignName'].apply(lambda x: self.get_mediaplan_id(x))
+
         self.banners_list['Agency'] = self.banners_list.\
-            apply(lambda x: self.get_agency(x['advertiserName'], x['Advertiser company']), axis=1)
+            apply(lambda x: self.get_agency(x['Advertiser name'], x['Advertiser company']), axis=1)
         self.banners_list['Advertiser'] = self.banners_list. \
-            apply(lambda x: self.get_advertiser(x['advertiserName'], x['Advertiser company']), axis=1)
+            apply(lambda x: self.get_advertiser(x['Advertiser name'], x['Advertiser company']), axis=1)
         self.banners_list['ERID errors'] = self.banners_list.\
             apply(lambda x: self.check_erid_error(x['parameter1'], x['parameter2'], x['parameter3']), axis=1)
         self.banners_list['Dropoff %'] = self.banners_list. \
             apply(lambda x: self.calc_dropoff(x['loadsCommercial'], x['impressionsCommercial']), axis=1)
+        print(self.banners_list.info())
 
     def set_columns_order(self):
         print('\r\nОставляем только нужные колонки и переименовываем их set_columns_order(self)')
@@ -331,15 +357,15 @@ class GetDcrReport:
                   'name': 'Название баннера',
                   'campaignID': 'ID кампании',
                   'campaignName': 'Название кампании',
-                  'campaignAssistantName': 'Ассистент',
-                  'advertiserId': 'ID рекламодателя',
-                  'advertiserName': 'Рекламодатель AdFox',
-                  'Advertiser company': 'Компания рекламодателя AdFox',
+                  'supercampaignId': 'ID суперкампании',
+                  'supercampaignName': 'Название суперкампании',
+                  'Mediaplan ID': 'ID медиаплана',
+                  'Assistant name': 'Ассистент',
                   'Agency': 'Агентство',
                   'Advertiser': 'Рекламодатель',
-                  'Mediaplan ID': 'ID медиаплана',
                   'loadsCommercial': 'Загрузки баннеров',
                   'impressionsCommercial': 'Показы',
+                  'clicksCommercial': 'Клики',
                   'Dropoff %': 'Dropoff %',
                   'Verifier': 'Верификатор',
                   'Admon': 'Верификация Admon',
@@ -401,15 +427,8 @@ class GetDcrReport:
             worksheet.write(3, 0, self.report_header[3][0], row_1_format)
             worksheet.write(3, 1, self.report_header[3][1], row_1_format)
 
-            thin_cols_list = [0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-                              18, 19, 20, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]
-            wide_cols_list = [1, 3, 17, 21, 22, 23]
-
-            for col in thin_cols_list:
-                worksheet.set_column(col, col, 12)
-
-            for col in wide_cols_list:
-                worksheet.set_column(col, col, 40)
+            for idx, col in enumerate(self.banners_list.columns):
+                worksheet.set_column(idx, idx, 12)
 
         print(f'Отчет готов и находится здесь: {self.out_file_name}')
 
@@ -430,8 +449,10 @@ class GetDcrReport:
         part['Content-Disposition'] = 'attachment; filename="%s"' % basename(self.out_file_name)
         msg.attach(part)
 
-        server = smtplib.SMTP_SSL(EMAIL_SMTP_SERVER)
-        server.login(EMAIL_LOGIN, EMAIL_PASSWD)
+        server = smtplib.SMTP(EMAIL_SMTP_SERVER)
+        server.set_debuglevel(True)
+        server.starttls()
+        server.login(EMAIL_FROM, EMAIL_PASSWD)
         server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
         server.quit()
         print('Отчет отправлен по списку рассылки')
@@ -439,14 +460,15 @@ class GetDcrReport:
     def run(self):
         self.set_dates()
         self.create_report_metadata()
-        self.get_banners_list()
+        self.get_basic_banners_data()
         self.get_campaigns_list_chunks()
         self.get_banners_info_list()
         self.get_advertisers_list()
+        self.get_assistants_list()
         self.add_info_to_banners_list()
         self.set_columns_order()
         self.export_to_file()
-        # self.sent_email()
+        self.sent_email()
 
 
 if __name__ == '__main__':

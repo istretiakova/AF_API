@@ -1,14 +1,14 @@
 import requests
 import pandas as pd
 import xml.etree.ElementTree as ET
-
+import time
 from settings import TOKEN
 
-file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Campaigns_list\campaigns_list_11-12nov2023.xlsx'
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Campaigns_list\campaigns_list_25-27nov2023.xlsx'
 
 def get_dates():
-    date_from = "2023-11-11"
-    date_to = "2023-11-12"
+    date_from = "2023-11-25"
+    date_to = "2023-11-27"
     return date_from, date_to
 
 
@@ -29,6 +29,11 @@ def get_campaign_ids_list(date_from, date_to):
 
     report_url = "https://adfox.yandex.ru/api/report/result?taskId=" + task_id
     report_response = requests.get(report_url, headers=headers)
+
+    while report_response.json()['result']['state'] != 'SUCCESS':
+        print(f"report state = {report_response.json()['result']['state']}")
+        time.sleep(10)
+        report_response = requests.get(report_url, headers=headers)
 
     campaign_ids_list = list(pd.DataFrame(data=report_response.json()['result']['table'],
                                           columns=report_response.json()['result']['fields'])['campaignId'])

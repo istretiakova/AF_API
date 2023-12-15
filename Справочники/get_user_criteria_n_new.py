@@ -24,7 +24,7 @@ total_rows = limit + 1
 page = 0
 rows = 0
 
-puid_n = 60
+puid_n = 6
 
 file_name = r'F:\WORK\AdFox\Справочники\DA_user_criteria{}_values_{}.xlsx'\
     .format(puid_n, datetime.now().strftime("%Y-%m-%d-%H%M%S"))

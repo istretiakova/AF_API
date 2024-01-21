@@ -1,6 +1,7 @@
 import requests
 import time
 import smtplib
+import sys
 import pandas as pd
 import xml.etree.ElementTree as ET
 
@@ -21,8 +22,20 @@ EMAIL_SMTP_SERVER = 'mail.axkv.ru'
 EMAIL_PASSWD = 'vI5ykKwkgo'
 EMAIL_FROM = 'noreply@axkv.ru'
 
-EMAIL_TO = ['itretiakova@alliance.digital',
-            'emelnikov@alliance.digital']
+EMAIL_TO = ['ORD@alliance.digital',
+            'AKornilov@alliance.digital',
+            'PlacementV@alliance.digital',
+            'CreativeV@alliance.digital',
+            'ANefedova@alliance.digital',
+            'SMIV@alliance.digital',
+            'SVNovak@alliance.digital',
+            'partners@alliance.digital',
+            'ASavosin@alliance.digital',
+            'BEFlishkin@alliance.digital',
+            'TLakusta@alliance.digital',
+            'AAKovalkov@alliance.digital',
+            'otp_da@alliance.digital',
+            'itretiakova@alliance.digita']
 
 EMAIL_MESSAGE = 'Пожалуйста НЕ ОТВЕЧАЙТЕ на это письмо, оно прислано роботом.\n' \
                 'Отчет находится в приложении, его можно открыть в Microsoft Excel.'
@@ -54,7 +67,7 @@ class GetDcrReport:
         self.banners_list = pd.DataFrame()
 
     def set_dates(self):
-        print('Задаем период отчета set_dates()')
+        print('\r\nЗадаем период отчета set_dates()')
         if self.report_date.day == 1:
             self.date_from = (self.report_date - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
             self.date_to = (self.report_date - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -66,7 +79,7 @@ class GetDcrReport:
         print(f'date_to={self.date_to}')
 
     def create_report_metadata(self):
-        print('Формируем шапку для отчета create_report_header(self)')
+        print('\r\nФормируем шапку для отчета create_report_header(self)')
         build_on = f'{datetime.now().strftime("%Y-%m-%d %H:%M:%S")}'
         self.report_header = [
             ['Report name', 'Ежедневный отчет по креативам'],
@@ -79,7 +92,7 @@ class GetDcrReport:
                    datetime.now().strftime("%Y%m%d%H%M%S"))
 
     def get_basic_banners_data(self):
-        print('Получаем список баннеров текущего месяца get_banners_impressions(self)')
+        print('\r\nПолучаем список баннеров текущего месяца get_banners_impressions(self)')
         report_id = BANNERS_DATA_REPORT_ID
         headers = {'Authorization': 'OAuth ' + TOKEN,
                    'Content-Type': 'application/json'}
@@ -92,7 +105,14 @@ class GetDcrReport:
         )
 
         task_response = requests.get(task_url, params=task_params, headers=headers)
-        task_id = task_response.json()['result']['taskId']
+        try:
+            task_id = task_response.json()['result']['taskId']
+            print(f'task_id = {task_id}')
+        except:
+            print(task_response.request.headers)
+            print(task_response.request.url)
+            print(task_response.json())
+            sys.exit()
 
         report_url = "https://adfox.yandex.ru/api/report/result?taskId=" + task_id
         report_response = requests.get(report_url, headers=headers)
@@ -106,12 +126,12 @@ class GetDcrReport:
                                          columns=report_response.json()['result']['fields'])
 
     def get_campaigns_list_chunks(self):
-        print('Получаем список кампаний текущего месяца get_campaigns_list_chunks(self)')
+        print('\r\nПолучаем список кампаний текущего месяца get_campaigns_list_chunks(self)')
         campaigns_list = list(self.banners_list['campaignId'].unique())
         self.campaigns_list_chunks = [campaigns_list[x:x + 300] for x in range(0, len(campaigns_list), 300)]
 
     def get_banners_list_chunk(self, campaigns_list):
-        print(f'\r\nПолучаем инфо о баннерах из {self.banners_chunk + 1} '
+        print(f'Получаем инфо о баннерах из {self.banners_chunk + 1} '
               f'части списка кампаний get_banners_list_chunk(self, campaigns_list)')
         campaign_ids_list = ','.join(str(x) for x in campaigns_list)
         headers = {'Authorization': 'OAuth ' + TOKEN}
@@ -201,7 +221,7 @@ class GetDcrReport:
         return action_oblect_info_rows
 
     def get_advertisers_list(self):
-        print('\nВыгружаем справочник рекламодателей get_advertisers_list()')
+        print('\r\nВыгружаем справочник рекламодателей get_advertisers_list()')
         fields = {'ID': 'Advertiser ID',
                   'account': 'Advertiser name',
                   'company': 'Advertiser company'}
@@ -209,7 +229,7 @@ class GetDcrReport:
         self.advertisers_list = pd.DataFrame(self.get_account_list(fields, action_object))
 
     def get_assistants_list(self):
-        print('\nВыгружаем справочник ассистентов get_advertisers_list()')
+        print('Выгружаем справочник ассистентов get_advertisers_list()')
         fields = {'ID': 'Assistant ID',
                   'account': 'Assistant name'}
         action_object = 'assistant'
@@ -309,7 +329,7 @@ class GetDcrReport:
         return dropoff
 
     def add_info_to_banners_list(self):
-        print('\r\nОбогащаем список баннеров дополнительным инфо из справочников add_info_to_banners_list(self)')
+        print('Обогащаем список баннеров дополнительным инфо из справочников add_info_to_banners_list(self)')
         self.banners_list = self.banners_list.merge(self.banners_info, how='inner',
                                                     left_on='bannerId', right_on='ID')
         self.banners_list = self.banners_list.merge(self.advertisers_list, how='left',
@@ -330,7 +350,7 @@ class GetDcrReport:
             apply(lambda x: self.calc_dropoff(x['loadsCommercial'], x['impressionsCommercial']), axis=1)
 
     def set_columns_order(self):
-        print('\r\nОставляем только нужные колонки и переименовываем их set_columns_order(self)')
+        print('Оставляем только нужные колонки и переименовываем их set_columns_order(self)')
         fields = {'bannerId': 'ID баннера',
                   'name': 'Название баннера',
                   'campaignID': 'ID кампании',
@@ -367,7 +387,6 @@ class GetDcrReport:
                   'campaignDateEnd': 'Дата финиша кампании'}
         self.banners_list = self.banners_list[fields.keys()]
         self.banners_list = self.banners_list.rename(columns=fields)
-        print(self.banners_list.info())
 
     def export_to_file(self):
         print('\r\nЗаписываем данные в файл export_to_file(self)')
@@ -447,9 +466,9 @@ class GetDcrReport:
         self.add_info_to_banners_list()
         self.set_columns_order()
         self.export_to_file()
-        self.sent_email()
+        # self.sent_email()
 
 
 if __name__ == '__main__':
-    process = GetDcrReport()
+    process = GetDcrReport(report_date='2023-05-01')
     process.run()

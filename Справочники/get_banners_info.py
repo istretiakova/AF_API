@@ -17,7 +17,7 @@ from settings import TOKEN
 headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
-campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\12.12.2023\campaigns.csv', sep='\t', encoding='utf8')
+campaigns_list = pd.read_csv(r'F:\WORK\AdFox\API_Reports\09.01.2024\campaigns.csv', sep='\t', encoding='utf8')
 campaign_ids_list = campaigns_list['ID кампании'].to_string(header=False, index=False).replace('\n', ',').replace(' ',
                                                                                                                   '')
 
@@ -28,7 +28,7 @@ total_rows = limit + 1
 page = 0
 rows = 0
 
-file_name = r'F:\WORK\AdFox\API_Reports\12.12.2023\banners_info_{}.xlsx'.\
+file_name = r'F:\WORK\AdFox\API_Reports\09.01.2024\banners_info_{}.xlsx'.\
     format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
 writer = pd.ExcelWriter(file_name)

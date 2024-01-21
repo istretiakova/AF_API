@@ -30,10 +30,12 @@ class GetDcrReport:
         self.banners_info_rows = []
         self.banners_info = pd.DataFrame()
         self.advertisers_list = pd.DataFrame()
+        self.assistants_list = pd.DataFrame()
         self.report_header = []
         self.banners_list = pd.DataFrame()
 
     def set_dates(self):
+        print('\r\nЗадаем период отчета set_dates()')
         if self.report_date.day == 1:
             self.date_from = (self.report_date - timedelta(days=1)).replace(day=1).strftime("%Y-%m-%d")
             self.date_to = (self.report_date - timedelta(days=1)).strftime("%Y-%m-%d")
@@ -450,6 +452,6 @@ class GetDcrReport:
 
 
 if __name__ == '__main__':
-    # process = GetDcrReport(report_date='2023-12-01')
-    process = GetDcrReport()
+    process = GetDcrReport(report_date='2024-01-01')
+    # process = GetDcrReport()
     process.run()

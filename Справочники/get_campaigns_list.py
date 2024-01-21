@@ -12,13 +12,13 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
 from datetime import datetime
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
-headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
 date_from = '2014-07-01'
-supercampaign_id = 186640
+supercampaign_id = 249333
 
 limit = 1000
 
@@ -27,7 +27,7 @@ total_rows = limit + 1
 page = 0
 rows = 0
 
-file_name = r'F:\WORK\AdFox\API_Reports\21.11.2022\campaigns_{}.xlsx'.format(
+file_name = r'F:\WORK\AdFox\API_Reports\09.01.2024\campaigns_{}.xlsx'.format(
     datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 
 writer = pd.ExcelWriter(file_name)

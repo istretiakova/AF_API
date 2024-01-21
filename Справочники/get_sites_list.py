@@ -103,7 +103,7 @@ with writer:
             elif row.find("name").text.lower().find('(mn)') >= 0:
                 s_type = 'MN'
             elif row.find("name").text.lower().find('(mobile)') >= 0 or row.find("name").text.lower().find(
-                    '(vitrinatv) mobile') >= 0:
+                    '(onlinetv) mobile') >= 0:
                 s_type = 'mobile app'
             elif row.find("name").text.lower().find('roll') >= 0 or row.find("name").text.lower().find(
                     'outstream') >= 0:

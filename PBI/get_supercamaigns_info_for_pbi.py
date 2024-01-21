@@ -4,11 +4,11 @@ import xml.etree.ElementTree as ET
 import time
 from settings import TOKEN
 
-file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_25-27nov2023.xlsx'
+file_name = r'F:\WORK\_PBI\Videonet_Monitoring_data\Supercampaigns_list\supercampaigns_list_01-15jan2024.xlsx'
 
 def get_dates():
-    date_from = "2023-11-25"
-    date_to = "2023-11-27"
+    date_from = "2024-01-01"
+    date_to = "2024-01-15"
     return date_from, date_to
 
 

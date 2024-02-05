@@ -1,12 +1,9 @@
 import requests
 import time
 import smtplib
-import sys
 import pandas as pd
-import xml.etree.ElementTree as ET
 
 from datetime import datetime, timedelta
-from calendar import monthrange
 from os import path, makedirs
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
@@ -26,7 +23,9 @@ EMAIL_SMTP_SERVER = 'mail.axkv.ru'
 EMAIL_PASSWD = 'vI5ykKwkgo'
 EMAIL_FROM = 'noreply@axkv.ru'
 
-EMAIL_TO = ['itretiakova@alliance.digital']
+EMAIL_TO = ['itretiakova@alliance.digital',
+            'adcampaigns@mediascope.net',
+            'adcounter@mediascope.net']
 
 EMAIL_MESSAGE = 'Счетчики для кампании superCampaignID '
 
@@ -156,7 +155,6 @@ class SentTrackersToAdcampaigns():
             print(f'формируем и сохраняем счетчики для суперкампании {supercampaign_id}')
             trackers_file = self.create_trackers_file(supercampaign_id)
             self.sent_file_to_adcampaigns(trackers_file, supercampaign_id)
-            break
 
     def run(self):
         self.set_dates()

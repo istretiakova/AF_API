@@ -12,24 +12,24 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 import requests
 from datetime import datetime
-from settings import ADFOX_API_KEY
+from settings import TOKEN
 
 # ===== Начало конфига параметров отчета =====
-report_directory = r'F:\WORK\AdFox\API_Reports\23.11.2023'
+report_directory = r'F:\WORK\AdFox\API_Reports\16.02.2024'
 
 # указываем название файла со списком ID суперкампаний
-supercampaigns_list = pd.read_csv(report_directory + r'\supercampaigns.csv', sep=';', encoding='utf8')
+campaigns_list = pd.read_csv(report_directory + r'\nra_campaigns_feb2024.csv', sep=';', encoding='utf8')
 
 # Указываем имя файла с отчетом, в который будем выгружать данные по API
 file_name = report_directory + r'\campaigns_info_{}.xlsx'.format(datetime.now().strftime("%Y-%m-%d-%H%M%S"))
 # ===== Конец конфига параметров отчета =====
 
-headers = {'X-Yandex-API-Key': ADFOX_API_KEY}
+headers = {'Authorization': 'OAuth ' + TOKEN}
 url = 'https://adfox.yandex.ru/api/v1'
 
 campaigns_info_rows = []
 
-for campaign_num, campaign_id in enumerate(supercampaigns_list['ID суперкампании']):
+for campaign_num, campaign_id in enumerate(campaigns_list['ID кампании']):
     print(f'{campaign_num} -> {campaign_id}')
     params = (
         ('object', 'account'),

@@ -1,11 +1,10 @@
-import requests
+﻿import requests
 import time
 import smtplib
 import sys
 import os
 import shutil
 import pandas as pd
-import xml.etree.ElementTree as ET
 
 from datetime import datetime, timedelta
 from os.path import basename
@@ -27,18 +26,20 @@ REPORT_IDS = [('03', '6518'),
               ('16', '6525'),
               ('17', '6526'),
               ('18', '6527')]
-REPORT_PATH = r'F:\WORK\AdFox\API_Reports\Analytics\29.02.2024'
+REPORT_PATH = r'/volume1/Scripts/API_Reports/Analytics/'
 
-EMAIL_SMTP_SERVER = 'mail.axkv.ru'
+EMAIL_SMTP_SERVER = 'localhost'
 EMAIL_PASSWD = 'vI5ykKwkgo'
-EMAIL_FROM = 'noreply@axkv.ru'
+EMAIL_FROM = 'noreply@vidigital.ru'
 
-EMAIL_TO = ['itretiakova@alliance.digital']
+EMAIL_TO = ['itretiakova@alliance.digital',
+            'ANGrebenik@alliance.digital',
+            'TSemenova@alliance.digital']
 
 EMAIL_MESSAGE = 'Пожалуйста НЕ ОТВЕЧАЙТЕ на это письмо, оно прислано роботом.\n' \
-                'Отчет находится в приложении, его можно открыть в Microsoft Excel.'
+                'Отчеты находятся в приложении, их можно открыть в Microsoft Excel.'
 
-EMAIL_SUBJECT = 'TEST!!! DA : Analytic reports : Ежедневные отчет для аналитики'
+EMAIL_SUBJECT = 'DA : Daily analytics reports : Ежедневные отчет для аналитики'
 
 # ================ Report config end =====================
 
@@ -106,9 +107,21 @@ def set_15_report_date_from(report_date):
     return date_from
 
 
+def set_12_report_date_from(report_date):
+    if report_date.day == 1:
+        date_from = (report_date - timedelta(days=1)).replace(day=16).strftime("%Y-%m-%d")
+    elif 1 < report_date.day <= 16:
+        date_from = report_date.replace(day=1).strftime("%Y-%m-%d")
+    else:
+        date_from = report_date.replace(day=16).strftime("%Y-%m-%d")
+    print(f'date_from={date_from}')
+    return date_from
+
+
 def create_file_name(report_name):
-    out_file_name = r'{}\{}.xlsx'. \
+    out_file_name = r'{}{}.csv'. \
         format(REPORT_PATH, report_name)
+    print(f'\n{out_file_name}')
     return out_file_name
 
 
@@ -120,12 +133,25 @@ def create_file_15_name(report_name, report_date):
     else:
         suffix = '3'
 
-    out_file_name = r'{}\{}_{}.xlsx'. \
+    out_file_name = r'{}{}_{}.csv'. \
+        format(REPORT_PATH, report_name, suffix)
+    print(f'\n{out_file_name}')
+    return out_file_name
+
+
+def create_file_12_name(report_name, report_date):
+    if 1 < report_date.day <= 16:
+        suffix = '1'
+    else:
+        suffix = '2'
+
+    out_file_name = r'{}{}_{}.csv'. \
         format(REPORT_PATH, report_name, suffix)
     return out_file_name
 
 
 def remove_old_reports(folder):
+    print('Удаляем предыдущие отчеты')
     for filename in os.listdir(folder):
         file_path = os.path.join(folder, filename)
         try:
@@ -138,7 +164,7 @@ def remove_old_reports(folder):
 
 
 def set_report_task(report_name, report_id, date_from, date_to):
-    print(f'\r\nПолучаем данные отчета {report_name}')
+    print(f'Стаавим задачу на генерацию отчета {report_name}')
 
     task_url = 'https://adfox.yandex.ru/api/report/owner'
     task_params = (
@@ -159,12 +185,14 @@ def set_report_task(report_name, report_id, date_from, date_to):
 
 
 def report_columns_rename(columns):
+    print('Переименовываем столбцы')
     for column_num, column_id in enumerate(columns):
         columns[column_num] = columns_names[column_id]
     return columns
 
 
 def get_report_data(task_id):
+    print(f'Получаем данные отчета {task_id}')
     report_url = "https://adfox.yandex.ru/api/report/result?taskId=" + task_id
     report_response = requests.get(report_url, headers=headers)
 
@@ -177,8 +205,8 @@ def get_report_data(task_id):
 
     report_columns = report_columns_rename(report_response.json()['result']['fields'])
 
-    report_totals = ['Всего'] + list(report_response.json()['result']['totals'].values())
-    report_table.append(report_totals)
+    # report_totals = ['Всего'] + list(report_response.json()['result']['totals'].values())
+    # report_table.append(report_totals)
     report_data = pd.DataFrame(data=report_table, columns=report_columns)
 
     if 'День' in report_data.columns:
@@ -189,13 +217,8 @@ def get_report_data(task_id):
 
 def export_report_to_file(report_name, report_data, out_file_name):
 
-    print(f'\r\nЗаписываем отчет {report_name} в файл {out_file_name}')
-    writer = pd.ExcelWriter(out_file_name, engine='xlsxwriter',
-                            engine_kwargs={'options': {'strings_to_numbers': True,
-                                                       'strings_to_urls': False}},
-                            datetime_format='dd.mm.yyyy')
-    with writer:
-        report_data.to_excel(writer, sheet_name='report', index=False)
+    print(f'Записываем отчет {report_name} в файл {out_file_name}')
+    report_data.to_csv(out_file_name, index=False, sep=';', encoding='cp1251', decimal=',')
 
 
 def send_reports(folder):
@@ -218,7 +241,7 @@ def send_reports(folder):
         msg.attach(part)
 
     server = smtplib.SMTP(EMAIL_SMTP_SERVER)
-    server.set_debuglevel(True)
+    server.set_debuglevel(2)
     server.starttls()
     server.login(EMAIL_FROM, EMAIL_PASSWD)
     server.sendmail(EMAIL_FROM, EMAIL_TO, msg.as_string())
@@ -239,6 +262,9 @@ def run(report_date=None):
         if report_name == '15':
             out_file_name = create_file_15_name(report_name, report_date)
             date_from = set_15_report_date_from(report_date=report_date)
+        elif report_name == '12':
+            out_file_name = create_file_12_name(report_name, report_date)
+            date_from = set_12_report_date_from(report_date=report_date)
         else:
             out_file_name = create_file_name(report_name)
             date_from = set_report_date_from(report_date=report_date)
@@ -250,4 +276,5 @@ def run(report_date=None):
 
 
 if __name__ == '__main__':
-    run(report_date='2024-02-29')
+    run()
+    # run(report_date='2024-02-29')

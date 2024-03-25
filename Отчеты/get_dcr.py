@@ -452,6 +452,6 @@ class GetDcrReport:
 
 
 if __name__ == '__main__':
-    process = GetDcrReport(report_date='2024-01-01')
-    # process = GetDcrReport()
+    # process = GetDcrReport(report_date='2024-01-01')
+    process = GetDcrReport()
     process.run()
